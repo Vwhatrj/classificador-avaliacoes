@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classificador de avaliações</title>
+<meta name="description" content="BERTimbau ajustado para dizer se uma avaliação em português é positiva ou negativa. Roda inteiro no seu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --surface: #ffffff;
+    --ink: #1c1b18;
+    --muted: #6b6860;
+    --line: #dedbd2;
+    --accent: #1f6f4a;
+    --pos: #1f6f4a;
+    --neg: #b3402e;
+    --track: #ecebe5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151513;
+      --surface: #1e1e1b;
+      --ink: #ecebe5;
+      --muted: #a09d94;
+      --line: #34332f;
+      --accent: #5cc493;
+      --pos: #5cc493;
+      --neg: #ee8a77;
+      --track: #2a2a26;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.55 "IBM Plex Sans", system-ui, sans-serif;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 56px 16px 48px; }
+  .eyebrow {
+    font: 500 12px/1 "IBM Plex Mono", monospace;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 { font-size: clamp(28px, 6vw, 38px); line-height: 1.12; font-weight: 600; margin: 0 0 14px; letter-spacing: -.01em; }
+  .lede { color: var(--muted); margin: 0 0 32px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
+  label { display: block; font-weight: 500; font-size: 14px; margin-bottom: 8px; }
+  textarea {
+    width: 100%;
+    min-height: 112px;
+    resize: vertical;
+    padding: 12px 14px;
+    font: inherit;
+    color: inherit;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .acoes { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+  #classificar {
+    font: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1;
+    padding: 12px 20px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--ink);
+    color: var(--bg);
+    cursor: pointer;
+  }
+  #classificar:hover:not(:disabled) { background: var(--accent); }
+  #classificar:disabled { opacity: .45; cursor: wait; }
+  #status { font: 13px/1.4 "IBM Plex Mono", monospace; color: var(--muted); }
+  .exemplos { margin-top: 20px; }
+  .exemplos p { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+  .exemplos div { display: flex; flex-wrap: wrap; gap: 8px; }
+  .exemplos button {
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .exemplos button:hover { border-color: var(--accent); color: var(--accent); }
+  #resultado { margin-top: 24px; }
+  #resultado[hidden] { display: none; }
+  .veredito { font-size: 26px; font-weight: 600; margin: 0 0 16px; }
+  .veredito.positivo { color: var(--pos); }
+  .veredito.negativo { color: var(--neg); }
+  .barra { display: grid; grid-template-columns: 76px 1fr 52px; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 14px; }
+  .trilho { height: 8px; background: var(--track); border-radius: 4px; overflow: hidden; }
+  .preench { height: 100%; width: 0; border-radius: 4px; transition: width .35s ease; }
+  .barra .num { font-family: "IBM Plex Mono", monospace; text-align: right; color: var(--muted); }
+  footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  footer dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0 0 16px; }
+  footer dt { font-family: "IBM Plex Mono", monospace; font-size: 13px; }
+  footer dd { margin: 0; color: var(--ink); }
+  a { color: var(--accent); text-underline-offset: 3px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">BERTimbau · pt-BR · roda no navegador</p>
+  <h1>Essa avaliação é positiva ou negativa?</h1>
+  <p class="lede">Um modelo de linguagem em português, ajustado com 26 mil avaliações reais de compras online. Escreva uma avaliação e veja o que ele acha. Nada sai do seu computador.</p>
+
+  <section class="card">
+    <label for="texto">Avaliação</label>
+    <textarea id="texto" placeholder="Ex.: Chegou rápido e bem embalado, recomendo!"></textarea>
+    <div class="acoes">
+      <button id="classificar" disabled>Classificar</button>
+      <span id="status" role="status">Carregando o modelo…</span>
+    </div>
+
+    <div class="exemplos">
+      <p>Ou teste um exemplo:</p>
+      <div id="exemplos"></div>
+    </div>
+
+    <div id="resultado" hidden aria-live="polite">
+      <p class="veredito" id="veredito"></p>
+      <div class="barra"><span>positivo</span><div class="trilho"><div class="preench" id="barra-positivo" style="background:var(--pos)"></div></div><span class="num" id="num-positivo"></span></div>
+      <div class="barra"><span>negativo</span><div class="trilho"><div class="preench" id="barra-negativo" style="background:var(--neg)"></div></div><span class="num" id="num-negativo"></span></div>
+    </div>
+  </section>
+
+  <footer>
+    <dl>
+      <dt>Acurácia</dt><dd>95,2% em 3.309 avaliações de teste</dd>
+      <dt>F1 macro</dt><dd>0,944 (baseline TF-IDF: 0,921)</dd>
+      <dt>Dados</dt><dd>Olist Brazilian E-Commerce (Kaggle)</dd>
+    </dl>
+    <a href="https://huggingface.co/Vwhtarj/bertimbau-avaliacoes-olist">Modelo</a> ·
+    <a href="https://github.com/Vwhatrj/classificador-avaliacoes">Código e notebook</a>
+  </footer>
+</main>
+
+<script type="module">
+  import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1";
+
+  const MODELO = "Vwhtarj/bertimbau-avaliacoes-olist";
+  const EXEMPLOS = [
+    "Produto chegou antes do prazo e muito bem embalado. Recomendo!",
+    "Comprei faz um mês e até agora nada. Péssimo.",
+    "Veio com defeito, mas a loja trocou rapidinho.",
+    "Não é ruim.",
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const texto = $("texto");
+  const botao = $("classificar");
+  const status = $("status");
+  const fmt = (p) => (p * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + "%";
+
+  for (const exemplo of EXEMPLOS) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = exemplo;
+    b.addEventListener("click", () => { texto.value = exemplo; classificar(); });
+    $("exemplos").append(b);
+  }
+
+  let classificador = null;
+
+  async function classificar() {
+    const conteudo = texto.value.trim();
+    if (!classificador || !conteudo) return;
+    botao.disabled = true;
+    status.textContent = "Analisando…";
+    const saida = await classificador(conteudo.slice(0, 2000), { top_k: 2 });
+    const notas = Object.fromEntries(saida.map((r) => [r.label, r.score]));
+    const vencedor = notas.positivo >= notas.negativo ? "positivo" : "negativo";
+
+    $("veredito").textContent = vencedor === "positivo" ? "Positiva" : "Negativa";
+    $("veredito").className = "veredito " + vencedor;
+    for (const rotulo of ["positivo", "negativo"]) {
+      $("barra-" + rotulo).style.width = (notas[rotulo] ?? 0) * 100 + "%";
+      $("num-" + rotulo).textContent = fmt(notas[rotulo] ?? 0);
+    }
+    $("resultado").hidden = false;
+    status.textContent = "";
+    botao.disabled = false;
+  }
+
+  botao.addEventListener("click", classificar);
+  texto.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) classificar();
+  });
+
+  try {
+    classificador = await pipeline("text-classification", MODELO, {
+      dtype: "q8",
+      progress_callback: (p) => {
+        if (p.status === "progress" && p.file.endsWith(".onnx")) {
+          status.textContent = `Baixando o modelo… ${Math.round(p.progress)}%`;
+        }
+      },
+    });
+    status.textContent = "Pronto. Ctrl+Enter também classifica.";
+    botao.disabled = false;
+  } catch (erro) {
+    console.error(erro);
+    status.textContent = "Não consegui carregar o modelo. Recarregue a página.";
+  }
+</script>
+</body>
+</html>
