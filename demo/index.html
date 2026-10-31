@@ -211,6 +211,12 @@
     });
     status.textContent = "Pronto. Ctrl+Enter também classifica.";
     botao.disabled = false;
+    // ?texto=... abre a página já classificando (bom para compartilhar um exemplo)
+    const inicial = new URLSearchParams(location.search).get("texto");
+    if (inicial) {
+      texto.value = inicial;
+      await classificar();
+    }
   } catch (erro) {
     console.error(erro);
     status.textContent = "Não consegui carregar o modelo. Recarregue a página.";
