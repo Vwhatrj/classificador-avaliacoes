@@ -6,6 +6,7 @@ Fine-tuning do **BERTimbau** (`neuralmind/bert-base-portuguese-cased`) para clas
 
 - **Teste no navegador:** [demo no Hugging Face Spaces](https://huggingface.co/spaces/Vwhtarj/classificador-avaliacoes). Roda no seu navegador com Transformers.js, sem servidor ([`demo/index.html`](demo/index.html)).
 - **Modelo publicado:** [Vwhtarj/bertimbau-avaliacoes-olist](https://huggingface.co/Vwhtarj/bertimbau-avaliacoes-olist)
+- **Artigo:** [Ensinei um modelo a ler avaliações de compras](https://www.linkedin.com/pulse/ensinei-um-modelo-ler-avalia%25C3%25A7%25C3%25B5es-de-compras-e-que-santos-souza-955ef/), no LinkedIn, sobre o processo e a análise de erros.
 - **Notebook:** [`notebooks/treino_bertimbau_olist.ipynb`](notebooks/treino_bertimbau_olist.ipynb). Também [publicado no Kaggle](https://www.kaggle.com/code/vwhatrj/classificador-de-avalia-es-com-bertimbau-olist), com todas as saídas.
 
 ## Resultados (conjunto de teste)
