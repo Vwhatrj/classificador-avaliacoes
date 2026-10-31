@@ -9,6 +9,8 @@ Fine-tuning do **BERTimbau** (`neuralmind/bert-base-portuguese-cased`) para clas
 - **Artigo:** [Ensinei um modelo a ler avaliações de compras](https://www.linkedin.com/pulse/ensinei-um-modelo-ler-avalia%25C3%25A7%25C3%25B5es-de-compras-e-que-santos-souza-955ef/), no LinkedIn, sobre o processo e a análise de erros.
 - **Notebook:** [`notebooks/treino_bertimbau_olist.ipynb`](notebooks/treino_bertimbau_olist.ipynb). Também [publicado no Kaggle](https://www.kaggle.com/code/vwhatrj/classificador-de-avalia-es-com-bertimbau-olist), com todas as saídas.
 
+> Outro projeto meu: [**API de RAG sobre cardápios**](https://github.com/Vwhatrj/rag-cardapios), em FastAPI, com embeddings locais e Gemini, que responde citando as fontes (97% numa avaliação de 30 perguntas, com comparação entre modelos).
+
 ## Resultados (conjunto de teste)
 
 3.309 avaliações nunca vistas no treino. Os dados somam 33.083 avaliações, das quais 68,6% são positivas.
