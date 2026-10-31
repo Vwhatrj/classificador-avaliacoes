@@ -2,6 +2,7 @@
 
 Fine-tuning do **BERTimbau** (`neuralmind/bert-base-portuguese-cased`) para classificar avaliações de compras como **positivas** ou **negativas**, com dados reais do e-commerce brasileiro ([Olist, Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)). Tudo roda de graça no Google Colab, e o modelo final fica publicado no Hugging Face.
 
+- **Teste no navegador:** [demo no Hugging Face Spaces](https://huggingface.co/spaces/Vwhtarj/classificador-avaliacoes) (código em [`demo/`](demo/))
 - **Modelo publicado:** [Vwhtarj/bertimbau-avaliacoes-olist](https://huggingface.co/Vwhtarj/bertimbau-avaliacoes-olist)
 - **Notebook:** [`notebooks/treino_bertimbau_olist.ipynb`](notebooks/treino_bertimbau_olist.ipynb)
 
